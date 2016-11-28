@@ -1,5 +1,5 @@
-apply plugin: 'java'
 
+apply plugin: 'com.android.library'
 
 class StoneConfig {
     String packageName = 'com.dropbox.stone'
@@ -101,10 +101,8 @@ def runStoneGenerator(StoneConfig config,
     }
 }
 
-
-
 // add generateStone task for all source sets (e.g. generateTestStone, etc)
-project.sourceSets.all { SourceSet sourceSet ->
+android.sourceSets.all { sourceSet ->
     def taskName = "main".equals(sourceSet.name) ? "generateStone" : "generate${sourceSet.name.capitalize()}Stone"
     task "${taskName}" {
         description "Generate Stone Java source files for ${sourceSet.name}."
@@ -134,10 +132,13 @@ project.sourceSets.all { SourceSet sourceSet ->
     }
 
     sourceSet.java.srcDir project.tasks."${taskName}".outputDir
-    Task compile = project.tasks.getByName(sourceSet.getCompileTaskName("java"))
-    compile.dependsOn project.tasks."${taskName}"
+    project.tasks.all { task->
+        if(task.name.startsWith("compile")) {
+            println(task.name)
+            task.dependsOn project.tasks."${taskName}"
+        }
+    }
 }
-
 
 generateStone {
     config = new StoneConfig(
@@ -150,12 +151,6 @@ generateStone {
                 javadoc: 'Base class for user auth clients.',
                 requestsClassnamePrefix: "DbxUser",
                 routeFilter: 'auth="user" or auth="noauth"',
-            ),
-            new ClientSpec(
-                name: 'DbxTeamClientV2Base',
-                javadoc: 'Base class for team auth clients.',
-                requestsClassnamePrefix: 'DbxTeam',
-                routeFilter: 'auth="team"',
             ),
             new ClientSpec(
                 name: 'DbxAppClientV2Base',
