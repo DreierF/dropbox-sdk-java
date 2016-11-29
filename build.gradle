@@ -3,7 +3,7 @@ apply plugin: 'com.github.ben-manes.versions'
 
 group = 'com.dropbox.core'
 archivesBaseName = 'core-android'
-version = '2.1.2'
+version = '0-SNAPSHOT' //'2.1.2'
 
 ext {
     mavenName = 'Inofficial Dropbox Android library'
@@ -12,7 +12,9 @@ ext {
     authInfoPropertyName = 'com.dropbox.test.authInfoFile'
     basePom = pom {
         name = mavenName
+        groupId = project.group
         artifactId = archivesBaseName
+        version = project.version
         project {
             description 'Inofficial Android client library for the Dropbox API.'
             packaging 'aar'
@@ -46,6 +48,7 @@ ext {
 
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
     }
 
@@ -59,6 +62,7 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         jcenter()
     }
 }

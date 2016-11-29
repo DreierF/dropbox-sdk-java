@@ -1,34 +1,77 @@
-apply plugin: 'java'
-apply plugin: 'java-library-distribution'
-apply plugin: 'signing'
 apply plugin: 'maven'
+apply plugin: 'signing'
+
+def isReleaseBuild() {
+    return VERSION_NAME.contains("SNAPSHOT") == false
+}
+
+def getReleaseRepositoryUrl() {
+    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
+            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+}
+
+def getSnapshotRepositoryUrl() {
+    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
+            : "https://oss.sonatype.org/content/repositories/snapshots/"
+}
+
+def getRepositoryUsername() {
+    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+}
+
+def getRepositoryPassword() {
+    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
+}
+
+afterEvaluate { project ->
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { deployment ->
+                    verifySdkVersion(deployment)
+                    signing.signPom(deployment)
+                }
+
+                pom = project.basePom
+
+                repository(url: getReleaseRepositoryUrl()) {
+                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+                }
+                snapshotRepository(url: getSnapshotRepositoryUrl()) {
+                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+                }
+            }
+        }
+    }
+
+    signing {
+        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
+    }
+
+    task androidJavadocs(type: Javadoc) {
+        source = android.sourceSets.main.allJava
+    }
+
+    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+        classifier = 'javadoc'
+        from androidJavadocs.destinationDir
+    }
+
+    task androidSourcesJar(type: Jar) {
+        classifier = 'sources'
+        from android.sourceSets.main.java.sourceFiles
+    }
+
+    artifacts {
+        archives androidSourcesJar
+    }
+}
 
 task releaseTest() {
     dependsOn ':proguard:proguardTest'
     dependsOn test
     dependsOn integrationTest
-}
-
-
-signing {
-    required {
-        // don't sign for installing in local maven
-        gradle.taskGraph.hasTask("uploadArchives") && !project.version.contains("SNAPSHOT")
-    }
-    sign configurations.archives
-}
-
-// Remember to upload binary with releases on GitHub. Some 3rd party developers still rely on
-// manually downloading and managing their dependencies.
-distributions {
-    main {
-        baseName = project.archivesBaseName
-        contents {
-            // Add source JARs
-            from { sourcesJar.outputs.getFiles() }
-            from { 'ChangeLog.txt' }
-        }
-    }
 }
 
 /**
@@ -54,24 +97,3 @@ def verifySdkVersion(deployment) {
         throw new GradleException("Could not find sdk-version.txt in artifact: " + deployment.mainArtifact.file.absolutePath);
     }
 }
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { deployment ->
-                verifySdkVersion(deployment)
-                signing.signPom(deployment)
-            }
-
-            pom = project.basePom
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(
-                    userName: ossrhUsername,
-                    password: ossrhPassword
-                )
-            }
-        }
-    }
-}
-
