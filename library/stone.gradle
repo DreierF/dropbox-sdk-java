@@ -138,6 +138,7 @@ android.sourceSets.all { sourceSet ->
 }
 
 generateStone {
+    stoneDir = '../stone'
     config = new StoneConfig(
         packageName: 'com.dropbox.core.v2',
         globalRouteFilter: 'alpha_group=null and beta_group=null',
@@ -161,6 +162,7 @@ generateStone {
 }
 
 generateTestStone {
+    stoneDir = '../stone'
     config = new StoneConfig(
         packageName: 'com.dropbox.core.stone',
         dataTypesOnly: true,
