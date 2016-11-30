@@ -1,9 +1,9 @@
 apply plugin: 'maven'
 apply plugin: 'com.github.ben-manes.versions'
 
-group = 'com.dropbox.core'
-archivesBaseName = 'core-android'
-version = '0-SNAPSHOT' //'2.1.2'
+group = 'com.github.dreierf'
+archivesBaseName = 'dropbox-android-core'
+version = '2.1.2'
 
 ext {
     mavenName = 'Inofficial Dropbox Android library'
@@ -57,6 +57,7 @@ buildscript {
         classpath 'com.dropbox.maven:pem-converter-maven-plugin:1.0'
         classpath 'com.android.tools.build:gradle:2.2.2'
         classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.1'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
     }
 }
 

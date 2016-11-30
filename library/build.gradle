@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 25
@@ -8,6 +9,7 @@ android {
         minSdkVersion 1
         targetSdkVersion 25
         versionName project.version
+        consumerProguardFile "../consumer-proguard-rules.pro"
     }
 
     compileOptions {
@@ -17,6 +19,23 @@ android {
 
     lintOptions {
         abortOnError false
+    }
+
+    // Turn on logging for all tests, filter to show failures/skips only
+    testOptions {
+        unitTests.all {
+           // exclude integration tests
+            exclude '**/IT*.class'
+            exclude '**/*IT.class'
+            exclude '**/*IT$*.class'
+
+            testLogging {
+                events "skipped", "failed"
+                info {
+                   events "passed", "skipped", "failed"
+                }
+            }
+        }
     }
 }
 
@@ -32,21 +51,6 @@ dependencies {
     testCompile 'org.openjdk.jmh:jmh-generator-annprocess:1.12'
     testCompile 'com.squareup.okhttp3:okhttp:3.3.1'
     testCompile 'com.google.guava:guava:19.0'
-}
-
-// Turn on logging for all tests, filter to show failures/skips only
-tasks.withType(Test) {
-   // exclude integration tests
-    exclude '**/IT*.class'
-    exclude '**/*IT.class'
-    exclude '**/*IT$*.class'
-
-    testLogging {
-        events "skipped", "failed"
-        info {
-           events "passed", "skipped", "failed"
-        }
-    }
 }
 
 def getAuthInfoFile() {
@@ -69,7 +73,6 @@ def getAuthInfoFile() {
     return authInfoFile
 }
 
-
 task integrationTest(type: Test) {
     description 'Runs integration tests against Production or Dev servers.'
 
@@ -77,13 +80,6 @@ task integrationTest(type: Test) {
     include '**/IT*.class'
     include '**/*IT.class'
     include '**/*IT$*.class'
-
-    testLogging {
-        events "skipped", "failed"
-        info {
-            events "passed", "skipped", "failed"
-        }
-    }
 
     reports {
         html {
@@ -121,14 +117,9 @@ tasks.withType(Javadoc) {
 }
 
 apply from: 'stone.gradle'
-
-// load release configuration
-if (!project.version.contains('SNAPSHOT')) {
-    //apply from: 'release.gradle'
-}
+apply from: 'release.gradle'
 
 apply plugin: 'com.getkeepsafe.dexcount'
-
 dexcount {
     format = "list"
     includeClasses = true

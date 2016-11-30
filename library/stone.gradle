@@ -131,7 +131,6 @@ android.sourceSets.all { sourceSet ->
     sourceSet.java.srcDir project.tasks."${taskName}".outputDir
     project.tasks.all { task->
         if(task.name.startsWith("compile")) {
-            println(task.name)
             task.dependsOn project.tasks."${taskName}"
         }
     }

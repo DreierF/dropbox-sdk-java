@@ -1,6 +1,20 @@
-# Dropbox Core SDK for Java 6+
+# Inofficial Android client library for the Dropbox API.
 
-A Java library to access [Dropbox's HTTP-based Core API v2](https://www.dropbox.com/developers/documentation/http/documentation).  This SDK also supports the older [Core API v1](https://www.dropbox.com/developers-v1/core/docs), but that support will be removed at some point.
+An android library to access [Dropbox's HTTP-based Core API v2](https://www.dropbox.com/developers/documentation/http/documentation). This SDK also supports the older [Core API v1](https://www.dropbox.com/developers-v1/core/docs), but that support will be removed at some point.
+
+This is a fork of the official Dropbox Java API, with the aim to reduce the method count of the library.
+Currently it has been shrinked to 5789 methods.
+This has been _removed_:
+  * Team features
+  * Sharing features
+  * Google App Engine support
+  * OkHttp support (OkHttp3 support is still included)
+  * OSGi
+
+Further changes:
+  * Adopted to the standard library layout
+  * Included consumer proguard file
+  * Changed language level to Java 7
 
 License: [MIT](License.txt)
 
@@ -8,22 +22,12 @@ License: [MIT](License.txt)
 
 ## Setup
 
-If you're using Maven, then edit your project's "pom.xml" and add this to the `<dependencies>` section:
-
-```xml
-<dependency>
-    <groupId>com.dropbox.core</groupId>
-    <artifactId>dropbox-core-sdk</artifactId>
-    <version>2.1.2</version>
-</dependency>
-```
-
 If you are using Gradle, then edit your project's "build.gradle" and add this to the `dependencies` section:
 
 ```groovy
 dependencies {
     // ...
-    compile 'com.dropbox.core:dropbox-core-sdk:2.1.2'
+    compile 'com.github.dreierf:dropbox-android-core:2.1.2'
 }
 ```
 
@@ -48,9 +52,7 @@ Save the API key to a JSON file called, say, "test.app":
 ## Using the Dropbox API
 
 Before your app can access a Dropbox user's files, the user must authorize your application using OAuth 2.  Successfully completing this authorization flow gives you an _access token_ for the user's Dropbox account, which grants you the ability to make Dropbox API calls to access their files.
-  * Example for a simple web app: [Web File Browser example](examples/web-file-browser/src/main/java/com/dropbox/core/examples/web_file_browser/DropboxAuth.java)
-  * Example for an Android app: [Android example](examples/android/src/main/java/com/dropbox/core/examples/android/UserActivity.java)
-  * Example for a command-line tool: [Command-Line Authorization example](examples/authorize/src/main/java/com/dropbox/core/examples/authorize/Main.java)
+Example for an Android app: [Android example](examples/android/src/main/java/com/dropbox/core/examples/android/UserActivity.java)
 
 Once you have an access token, create a [`DbxClientV2`](https://dropbox.github.io/dropbox-sdk-java/api-docs/v2.1.x/com/dropbox/core/v2/DbxClientV2.html) and start making API calls.
 
@@ -71,68 +73,7 @@ The output will be in "build/".
 
 1. Follow the instructions in the "Build from source" section above.
 2. Save your Dropbox API key in a file called "test.app".  See: [Get a Dropbox API key](#get-a-dropbox-api-key), above.
-3. Compile and install the SDK into your local maven repo: `./gradlew install`
-4. To compile all the examples: `(cd examples/ && ./gradlew classes`
-5. To compile just one example: `(cd examples/ && ./gradlew :<example-name>:classes`
-
-### authorize
-
-This examples runs through the OAuth 2 authorization flow.
-
-```
-cd examples
-./run authorize test.app test.auth
-```
-
-This produces a file named "test.auth" that has the access token.  This file can be passed in to the other examples.
-
-### account-info
-
-A simple example that fetches and displays information about the account associated with the access token.
-
-```
-cd examples
-./run account-info test.auth
-```
-
-(You must first generate "test.auth" using the "authorize" example above.)
-
-### longpoll
-
-An example of how to watch for changes in a Dropbox directory.
-
-```
-cd examples
-./run longpoll test.auth "/path/to/watch"
-```
-
-(You must first generate "test.auth" using the "authorize" example above.)
-
-### tutorial
-
-The example from our [online tutorial](https://www.dropbox.com/developers/documentation/java#tutorial). Unlike the other examples, this example is not meant to be run without modification.
-
-### upload-file
-
-Uploads a file to Dropbox. The example includes regular and chunked file uploads.
-
-```
-cd examples
-./run upload-file test.auth local-path/file.txt /dropbox-path/file.txt
-```
-
-(You must first generate "test.auth" using the "authorize" example above.)
-
-### web-file-browser
-
-A tiny web app that runs through the OAuth 2 authorization flow and then uses Dropbox API calls to let the user browse their Dropbox files.
-
-Prerequisite: In the Dropbox API [app configuration console](https://www.dropbox.com/developers/apps), you need to add "http://localhost:5000/dropbox-auth-finish" to the list of allowed redirect URIs.
-
-```
-cd examples
-./run web-file-browser 5000 test.app web-file-browser.db
-```
+3. Compile with `./gradlew :sample:assembleRelease`
 
 ## Running the integration tests
 
@@ -145,27 +86,6 @@ To run individual tests, use the `--tests` gradle test filter:
 ```
 
 ## FAQ
-
-### When I use the bundle JAR with some OSGi containers within an OSGi subsystem, I get a "Missing required capability" error.
-
-The JAR's manifest has the following line:
-
-```
-Require-Capability: osgi.ee;filter="(&(osgi.ee=JavaSE)(version=1.6))"
-```
-
-OSGi containers running on Java 1.6 or above should provide this capability.  Unfortunately, some OSGi containers don't do this correctly and will reject the bundle JAR in the OSGi subsystem context.
-
-As a workaround, you can build your own version of the JAR that omits the "osgi.ee" capability by running:
-
-```
-./gradlew clean
-./gradlew -Posgi.bnd.noee=true jar
-```
-
-(This is equivalent to passing the "-noee" option to the OSGi "bnd" tool.)
-
-Another workaround is to tell your OSGi container to provide that requirement: [StackOverflow answer](https://stackoverflow.com/a/24673359/163832).
 
 ### Does this SDK require any special ProGuard rules for shrink optimizations?
 
