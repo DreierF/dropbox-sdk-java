@@ -3,7 +3,7 @@
 An android library to access [Dropbox's HTTP-based Core API v2](https://www.dropbox.com/developers/documentation/http/documentation). This SDK also supports the older [Core API v1](https://www.dropbox.com/developers-v1/core/docs), but that support will be removed at some point.
 
 This is a fork of the official Dropbox Java API, with the aim to reduce the method count of the library.
-Currently it has been shrinked to 5789 methods.
+Currently it has been shrinked to 5789 methods (without ProGuard).
 This has been _removed_:
   * Team features
   * Sharing features
