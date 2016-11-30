@@ -3,7 +3,11 @@
 An android library to access [Dropbox's HTTP-based Core API v2](https://www.dropbox.com/developers/documentation/http/documentation). This SDK also supports the older [Core API v1](https://www.dropbox.com/developers-v1/core/docs), but that support will be removed at some point.
 
 This is a fork of the official Dropbox Java API, with the aim to reduce the method count of the library.
-Currently it has been shrinked to 5789 methods (without ProGuard).
+Currently it has been shrinked from 11,176 to 5,789 methods (without ProGuard).
+
+With ProGuard and optimization turned on there is _no_ difference in the method
+count to the official library. But for my project the debug build hit the 65k limit, that's why I came up with this workaround.
+
 This has been _removed_:
   * Team features
   * Sharing features
@@ -12,7 +16,7 @@ This has been _removed_:
   * OSGi
 
 Further changes:
-  * Adopted to the standard library layout
+  * Adopted to the standard library folder layout
   * Included consumer proguard file
   * Changed language level to Java 7
 
@@ -22,16 +26,24 @@ License: [MIT](License.txt)
 
 ## Setup
 
-If you are using Gradle, then edit your project's "build.gradle" and add this to the `dependencies` section:
+Then edit your project's "build.gradle" and add the following:
 
 ```groovy
+repositories {
+   flatDir {
+       dirs 'libs'
+   }
+}
+
 dependencies {
-    // ...
-    compile 'com.github.dreierf:dropbox-android-core:2.1.2'
+    compile(name: 'dropbox-android-core-2-1-2', ext: 'aar')
+    compile 'com.fasterxml.jackson.core:jackson-core:2.8.5'
+    compile 'javax.servlet:servlet-api:2.5'
+    compile 'com.squareup.okhttp3:okhttp:3.4.2'
 }
 ```
 
-You can also download the Java SDK JAR and and its required dependencies directly from the [latest release page](https://github.com/dropbox/dropbox-sdk-java/releases/latest). Note that the distribution artifacts on the releases pages do not contain optional dependencies.
+Download the Android library AAR directly from the [latest release page](https://github.com/dreierf/dropbox-sdk-java/releases/latest) and place it into your libs folder. Note that the distribution artifacts on the releases pages do not contain optional dependencies.
 
 ## Get a Dropbox API key
 
@@ -61,7 +73,7 @@ You only need to perform the authorization process once per user.  Once you have
 ## Building from source
 
 ```
-git clone https://github.com/dropbox/dropbox-sdk-java.git
+git clone https://github.com/dreierf/dropbox-sdk-java.git
 cd dropbox-sdk-java
 ./update-submodules    # also do this after every "git checkout"
 ./gradlew build
@@ -72,7 +84,7 @@ The output will be in "build/".
 ## Running the examples
 
 1. Follow the instructions in the "Build from source" section above.
-2. Save your Dropbox API key in a file called "test.app".  See: [Get a Dropbox API key](#get-a-dropbox-api-key), above.
+2. Save your Dropbox API key in a file called "test.app". See: [Get a Dropbox API key](#get-a-dropbox-api-key), above.
 3. Compile with `./gradlew :sample:assembleRelease`
 
 ## Running the integration tests
@@ -84,19 +96,3 @@ To run individual tests, use the `--tests` gradle test filter:
 ```
 ./gradlew -Pcom.dropbox.test.authInfoFile=<path-to-test.auth> integrationTest --tests '*.DbxClientV1IT.testAccountInfo'
 ```
-
-## FAQ
-
-### Does this SDK require any special ProGuard rules for shrink optimizations?
-
-Versions 2.0.0-2.0.3 of this SDK require SDK-specific ProGuard rules when shrinking is enabled. However, since version **2.0.4**, the only ProGuard rules necessary are for the SDK's required and optional dependencies. If you encounter ProGuard warnings, consider adding the following "-dontwarn" directives to your ProGuard configuration file:
-
-```
--dontwarn okio.**
--dontwarn okhttp3.**
--dontwarn com.squareup.okhttp.**
--dontwarn com.google.appengine.**
--dontwarn javax.servlet.**
-```
-
-**IMPORTANT: If you are running version 2.0.x before 2.0.3, you should update to the latest Dropbox SDK version to avoid a deserialization bug that can cause Android apps that use ProGuard to crash.**
